@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as FreightRouteImport } from './routes/freight'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as PlannerRouteImport } from './routes/planner'
+import { Route as RiskRouteImport } from './routes/risk'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +35,25 @@ const PlannerRoute = PlannerRouteImport.update({
   path: '/planner',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RiskRoute = RiskRouteImport.update({
+  id: '/risk',
+  path: '/risk',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/freight': typeof FreightRoute
   '/map': typeof MapRoute
   '/planner': typeof PlannerRoute
+  '/risk': typeof RiskRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/freight': typeof FreightRoute
   '/map': typeof MapRoute
   '/planner': typeof PlannerRoute
+  '/risk': typeof RiskRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,14 @@ export interface FileRoutesById {
   '/freight': typeof FreightRoute
   '/map': typeof MapRoute
   '/planner': typeof PlannerRoute
+  '/risk': typeof RiskRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/freight' | '/map' | '/planner'
+  fullPaths: '/' | '/freight' | '/map' | '/planner' | '/risk'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/freight' | '/map' | '/planner'
-  id: '__root__' | '/' | '/freight' | '/map' | '/planner'
+  to: '/' | '/freight' | '/map' | '/planner' | '/risk'
+  id: '__root__' | '/' | '/freight' | '/map' | '/planner' | '/risk'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +76,7 @@ export interface RootRouteChildren {
   FreightRoute: typeof FreightRoute
   MapRoute: typeof MapRoute
   PlannerRoute: typeof PlannerRoute
+  RiskRoute: typeof RiskRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +109,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlannerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/risk': {
+      id: '/risk'
+      path: '/risk'
+      fullPath: '/risk'
+      preLoaderRoute: typeof RiskRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +124,7 @@ const rootRouteChildren: RootRouteChildren = {
   FreightRoute: FreightRoute,
   MapRoute: MapRoute,
   PlannerRoute: PlannerRoute,
+  RiskRoute: RiskRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
