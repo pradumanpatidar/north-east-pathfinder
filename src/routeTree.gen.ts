@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccessibilityRouteImport } from './routes/accessibility'
 import { Route as AlertsRouteImport } from './routes/alerts'
+import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as FreightRouteImport } from './routes/freight'
 import { Route as IncidentsRouteImport } from './routes/incidents'
 import { Route as MapRouteImport } from './routes/map'
@@ -31,6 +32,11 @@ const AccessibilityRoute = AccessibilityRouteImport.update({
 const AlertsRoute = AlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalyticsRoute = AnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FreightRoute = FreightRouteImport.update({
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accessibility': typeof AccessibilityRoute
   '/alerts': typeof AlertsRoute
+  '/analytics': typeof AnalyticsRoute
   '/freight': typeof FreightRoute
   '/incidents': typeof IncidentsRoute
   '/map': typeof MapRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accessibility': typeof AccessibilityRoute
   '/alerts': typeof AlertsRoute
+  '/analytics': typeof AnalyticsRoute
   '/freight': typeof FreightRoute
   '/incidents': typeof IncidentsRoute
   '/map': typeof MapRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/accessibility': typeof AccessibilityRoute
   '/alerts': typeof AlertsRoute
+  '/analytics': typeof AnalyticsRoute
   '/freight': typeof FreightRoute
   '/incidents': typeof IncidentsRoute
   '/map': typeof MapRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accessibility'
     | '/alerts'
+    | '/analytics'
     | '/freight'
     | '/incidents'
     | '/map'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accessibility'
     | '/alerts'
+    | '/analytics'
     | '/freight'
     | '/incidents'
     | '/map'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accessibility'
     | '/alerts'
+    | '/analytics'
     | '/freight'
     | '/incidents'
     | '/map'
@@ -127,6 +139,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccessibilityRoute: typeof AccessibilityRoute
   AlertsRoute: typeof AlertsRoute
+  AnalyticsRoute: typeof AnalyticsRoute
   FreightRoute: typeof FreightRoute
   IncidentsRoute: typeof IncidentsRoute
   MapRoute: typeof MapRoute
@@ -155,6 +168,13 @@ declare module '@tanstack/react-router' {
       path: '/alerts'
       fullPath: '/alerts'
       preLoaderRoute: typeof AlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analytics': {
+      id: '/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/freight': {
@@ -199,6 +219,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccessibilityRoute: AccessibilityRoute,
   AlertsRoute: AlertsRoute,
+  AnalyticsRoute: AnalyticsRoute,
   FreightRoute: FreightRoute,
   IncidentsRoute: IncidentsRoute,
   MapRoute: MapRoute,
