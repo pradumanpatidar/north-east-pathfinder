@@ -42,7 +42,10 @@ export const CITIES: City[] = [
   { id: "siliguri", name: "Siliguri", state: "AS", lat: 26.7271, lng: 88.3953, hub: true },
   { id: "jowai", name: "Jowai", state: "ML", lat: 25.4506, lng: 92.1961, hub: false },
   { id: "nagaon", name: "Nagaon", state: "AS", lat: 26.3464, lng: 92.6838, hub: false },
+  { id: "bomdila", name: "Bomdila", state: "AR", lat: 27.2646, lng: 92.4159, hub: false },
+  { id: "tawang", name: "Tawang", state: "AR", lat: 27.5861, lng: 91.8594, hub: true },
 ];
+
 
 export const cityById = (id: string) => CITIES.find((c) => c.id === id);
 
@@ -451,8 +454,75 @@ export const SEGMENTS: CorridorSegment[] = [
       [28.0667, 95.3333],
     ],
   },
+  {
+    id: "seg-nh13-tezpur-bomdila",
+    name: "Tezpur – Bomdila (Balipara–Bhalukpong)",
+    highway: "NH-13",
+    from: "tezpur",
+    to: "bomdila",
+    lengthKm: 162,
+    terrain: "mountain",
+    roadCondition: 60,
+    landslideRisk: 74,
+    floodRisk: 20,
+    rainfallMm24h: 86,
+    closed: false,
+    laneWidthM: 5.5,
+    maxVehicleTonnes: 25,
+    path: [
+      [26.6338, 92.8],
+      [26.95, 92.75],
+      [27.1, 92.6],
+      [27.2646, 92.4159],
+    ],
+  },
+  {
+    id: "seg-nh13-itanagar-bomdila",
+    name: "Itanagar – Bomdila (Trans-Arunachal)",
+    highway: "NH-13/NH-415",
+    from: "itanagar",
+    to: "bomdila",
+    lengthKm: 214,
+    terrain: "mountain",
+    roadCondition: 54,
+    landslideRisk: 68,
+    floodRisk: 24,
+    rainfallMm24h: 78,
+    closed: false,
+    laneWidthM: 5,
+    maxVehicleTonnes: 20,
+    path: [
+      [27.0844, 93.6053],
+      [27.2, 93.1],
+      [27.28, 92.75],
+      [27.2646, 92.4159],
+    ],
+  },
+  {
+    id: "seg-nh13-bomdila-tawang",
+    name: "Bomdila – Tawang (Sela Pass)",
+    highway: "NH-13",
+    from: "bomdila",
+    to: "tawang",
+    lengthKm: 178,
+    terrain: "mountain",
+    roadCondition: 46,
+    landslideRisk: 92,
+    floodRisk: 8,
+    rainfallMm24h: 64,
+    closed: false,
+    laneWidthM: 5,
+    maxVehicleTonnes: 20,
+    path: [
+      [27.2646, 92.4159],
+      [27.5, 92.1],
+      [27.51, 91.95],
+      [27.5861, 91.8594],
+    ],
+  },
 ];
 
 export const segmentById = (id: string) => SEGMENTS.find((s) => s.id === id);
 
 export const NER_CENTER: [number, number] = [25.9, 92.4];
+
