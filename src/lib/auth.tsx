@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       hydrated,
       signIn: (email, role, name) =>
         persist({
-          name: name || email.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()),
+          name: name || (email.split("@")[0] ?? email).replace(/[._]/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()),
           email,
           role,
           org: role === "operator" ? "Registered Logistics Operator" : "MDoNER — NER Freight Cell",

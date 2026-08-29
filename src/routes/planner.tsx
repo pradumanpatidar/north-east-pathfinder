@@ -103,7 +103,7 @@ function Planner() {
       return;
     }
     setResults(options);
-    setSelectedId(options.find((o) => o.recommended)?.id ?? options[0].id);
+    setSelectedId(options.find((o) => o.recommended)?.id ?? options[0]!.id);
     savePlan(request, options);
     if (!quiet) toast.success(`${options.length} route alternatives evaluated and scored.`);
   };

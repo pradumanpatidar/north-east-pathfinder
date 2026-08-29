@@ -337,13 +337,16 @@ export function planRoutes(
     };
   };
 
-  const options = [
-    build(safest, "Safest Route", 1),
-    build(fastest, "Fastest Route", 2),
-    build(cheapest, "Cheapest Route", 3),
-  ];
+  const candidates = [
+    [safest, "Safest Route", 1] as const,
+    [fastest, "Fastest Route", 2] as const,
+    [cheapest, "Cheapest Route", 3] as const,
+  ].filter((c) => Boolean(c[0]));
 
-  const best = [...options].sort((a, b) => b.weightedTotal - a.weightedTotal)[0];
+  const options = candidates.map(([entry, label, rank]) => build(entry!, label, rank));
+  if (!options.length) return [];
+
+  const best = [...options].sort((a, b) => b.weightedTotal - a.weightedTotal)[0]!;
   return options.map((o) => ({ ...o, recommended: o.id === best.id }));
 }
 
