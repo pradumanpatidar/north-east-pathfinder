@@ -42,7 +42,10 @@ export const CITIES: City[] = [
   { id: "siliguri", name: "Siliguri", state: "AS", lat: 26.7271, lng: 88.3953, hub: true },
   { id: "jowai", name: "Jowai", state: "ML", lat: 25.4506, lng: 92.1961, hub: false },
   { id: "nagaon", name: "Nagaon", state: "AS", lat: 26.3464, lng: 92.6838, hub: false },
+  { id: "bomdila", name: "Bomdila", state: "AR", lat: 27.2646, lng: 92.4159, hub: false },
+  { id: "tawang", name: "Tawang", state: "AR", lat: 27.5861, lng: 91.8594, hub: true },
 ];
+
 
 export const cityById = (id: string) => CITIES.find((c) => c.id === id);
 
