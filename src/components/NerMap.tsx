@@ -124,6 +124,7 @@ export default function NerMap({ layers, routes = [], height = "480px", focusSeg
           const risk = segmentDisasterRisk(seg);
           if (risk < 55) continue;
           const mid = seg.path[Math.floor(seg.path.length / 2)];
+          if (!mid) continue;
           L.circle(mid, {
             radius: 14000 + risk * 260,
             color: riskColor(risk),

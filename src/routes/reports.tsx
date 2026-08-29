@@ -49,6 +49,7 @@ function Reports() {
   }
 
   const recommended = plan.options.find((o) => o.recommended) ?? plan.options[0];
+  if (!recommended) return null;
   const alternatives = plan.options.filter((o) => o.id !== recommended.id);
   const segIds = new Set(plan.options.flatMap((o) => o.segmentIds));
   const relatedIncidents = INCIDENTS.filter((i) => segIds.has(i.segmentId) && i.status !== "Resolved");

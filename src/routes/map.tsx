@@ -116,7 +116,7 @@ function GisMap() {
         </div>
 
         <SectionCard title="North Eastern Region" description="Pan, zoom and click any corridor or incident for detail">
-          <MapPanel height="620px" layers={layers} focusSegmentIds={focus} />
+          <MapPanel height="620px" layers={layers} {...(focus ? { focusSegmentIds: focus } : {})} />
         </SectionCard>
       </div>
     </>
