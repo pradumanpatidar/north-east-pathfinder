@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { DemoNotice, MetricCard, PageHeader, SectionCard } from "@/components/common";
 import { Button } from "@/components/ui/button";
-import { PROVIDERS, ROUTE_WEIGHTS_DOC } from "@/lib/services";
+import { PROVIDERS } from "@/lib/services";
+import { SCORE_WEIGHTS } from "@/lib/ner/scoring";
 import { NAV_PERMISSIONS, ROLE_LABELS, useAuth, type Role } from "@/lib/auth";
 import { CITIES, SEGMENTS } from "@/lib/ner/geo";
 import { ALERTS, INCIDENTS, SHIPMENTS } from "@/lib/ner/demo-data";
@@ -24,6 +25,15 @@ export const Route = createFileRoute("/admin")({
 });
 
 const ROLES: Role[] = ["admin", "authority", "operator", "analyst"];
+
+const WEIGHT_DOC: Record<string, string> = {
+  safety: "Landslide, flood and incident exposure on each segment.",
+  accessibility: "Road condition, terrain, closures and vehicle suitability.",
+  time: "Estimated transit hours against the corridor baseline.",
+  cost: "Fuel, tolls, terrain surcharge and detour penalty.",
+  reliability: "Historic on-time performance of the corridor.",
+  environment: "CO2 emissions proxy from distance and gradient.",
+};
 
 function Admin() {
   const { user, can } = useAuth();
@@ -103,13 +113,13 @@ function Admin() {
 
       <SectionCard title="Scoring configuration" description="Default weights used by the explainable route engine">
         <div className="grid gap-2 sm:grid-cols-3">
-          {ROUTE_WEIGHTS_DOC.map((w) => (
-            <div key={w.label} className="rounded-sm border border-border px-3 py-2">
+          {Object.entries(SCORE_WEIGHTS).map(([key, weight]) => (
+            <div key={key} className="rounded-sm border border-border px-3 py-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium">{w.label}</span>
-                <span className="tabular text-xs">{w.weight}%</span>
+                <span className="text-xs font-medium capitalize">{key}</span>
+                <span className="tabular text-xs">{Math.round(weight * 100)}%</span>
               </div>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">{w.description}</p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">{WEIGHT_DOC[key]}</p>
             </div>
           ))}
         </div>
