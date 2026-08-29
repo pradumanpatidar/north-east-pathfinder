@@ -20,7 +20,7 @@ export const Route = createFileRoute("/reports")({
       { property: "og:description", content: "Printable route decision report for NER freight movement." },
     ],
   }),
-  component: Reports;
+  component: Reports,
 });
 
 function Reports() {
