@@ -343,11 +343,20 @@ export function planRoutes(
     [cheapest, "Cheapest Route", 3] as const,
   ].filter((c) => Boolean(c[0]));
 
-  const options = candidates.map(([entry, label, rank]) => build(entry!, label, rank));
+  const built = candidates.map(([entry, label, rank]) => build(entry!, label, rank));
+  // Collapse duplicates: on sparse corridors the same alignment can win several categories.
+  const seen = new Set<string>();
+  const options = built.filter((o) => {
+    const key = o.segments.map((s) => s.id).join("|");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
   if (!options.length) return [];
 
   const best = [...options].sort((a, b) => b.weightedTotal - a.weightedTotal)[0]!;
   return options.map((o) => ({ ...o, recommended: o.id === best.id }));
+
 }
 
 export const cityOptions = CITIES.map((c) => ({ value: c.id, label: `${c.name} (${c.state})` }));
