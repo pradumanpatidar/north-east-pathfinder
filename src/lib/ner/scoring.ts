@@ -236,20 +236,19 @@ function waypointNames(segments: CorridorSegment[], originId: string): string[] 
 
 // ---------- Route evaluation ----------
 
-function evaluate(
-  segments: CorridorSegment[],
-  req: RouteRequest,
-  incidentsBySegment: Record<string, number>,
-) {
+function evaluate(segments: CorridorSegment[], req: RouteRequest, impacts: ImpactMap) {
   const vehicle = VEHICLE[req.vehicleType];
   const distanceKm = segments.reduce((a, s) => a + s.lengthKm, 0);
+  const imp = (s: CorridorSegment) => asImpact(impacts[s.id]);
 
   let hours = 0;
   for (const s of segments) {
     const base = s.lengthKm / TERRAIN_SPEED[s.terrain];
     const weatherPenalty = 1 + Math.min(0.45, s.rainfallMm24h / 320);
     const conditionPenalty = 1 + (100 - s.roadCondition) / 260;
-    hours += base * weatherPenalty * conditionPenalty;
+    // Open incidents slow movement (single-lane convoys, clearance halts).
+    const incidentPenalty = 1 + Math.min(0.6, imp(s).riskDelta / 90);
+    hours += base * weatherPenalty * conditionPenalty * incidentPenalty;
   }
   hours += segments.length * 0.4; // checkposts / halts
 
@@ -260,12 +259,21 @@ function evaluate(
   const w = (fn: (s: CorridorSegment) => number) =>
     segments.reduce((a, s) => a + fn(s) * s.lengthKm, 0) / Math.max(1, distanceKm);
 
-  const safetyScore = clamp(round(w(segmentSafety)));
-  const accessibilityScore = clamp(round(w((s) => segmentAccessibility(s, req.weightTonnes))));
-  const reliabilityScore = clamp(round(w(segmentReliability)));
-  const disasterRisk = clamp(round(w(segmentDisasterRisk)));
-  const incidentCount = segments.reduce((a, s) => a + (incidentsBySegment[s.id] ?? 0), 0);
-  const closures = segments.filter((s) => s.closed).map((s) => `${s.highway} · ${s.name}`);
+  const safetyScore = clamp(round(w((s) => segmentSafety(s) - imp(s).riskDelta * 0.55)));
+  const accessibilityScore = clamp(
+    round(w((s) => segmentAccessibility(s, req.weightTonnes) - imp(s).accessDelta)),
+  );
+  const reliabilityScore = clamp(round(w((s) => segmentReliability(s) - imp(s).reliabilityDelta)));
+  const disasterRisk = clamp(round(w((s) => segmentDisasterRisk(s) + imp(s).riskDelta)));
+  const incidentCount = segments.reduce((a, s) => a + imp(s).count, 0);
+  const incidentLabels = segments.flatMap((s) => imp(s).labels);
+  const closures = segments
+    .filter((s) => s.closed || imp(s).blocking)
+    .map((s) => `${s.highway} · ${s.name}`);
+  // Vehicle suitability: hill segments refuse loads above their rated capacity.
+  const unsuitableSegments = segments
+    .filter((s) => req.weightTonnes > s.maxVehicleTonnes)
+    .map((s) => `${s.highway} · ${s.name} (max ${s.maxVehicleTonnes}t)`);
   const co2Kg = round(distanceKm * vehicle.co2PerKm, 1);
 
   return {
@@ -277,10 +285,13 @@ function evaluate(
     reliabilityScore,
     disasterRisk,
     incidentCount,
+    incidentLabels,
+    unsuitableSegments,
     closures,
     co2Kg,
   };
 }
+
 
 export function planRoutes(
   req: RouteRequest,
