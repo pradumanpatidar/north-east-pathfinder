@@ -54,6 +54,37 @@ export interface ScoreBreakdown {
   environment: number;
 }
 
+/**
+ * Aggregated live impact of open incidents on a single road segment.
+ * Produced by `buildSegmentImpacts` (demo register + field-officer reports).
+ */
+export interface SegmentImpact {
+  count: number;
+  riskDelta: number; // added to composite disaster risk
+  accessDelta: number; // subtracted from accessibility
+  reliabilityDelta: number; // subtracted from reliability
+  blocking: boolean;
+  labels: string[];
+}
+
+export type ImpactMap = Record<string, number | SegmentImpact>;
+
+export const EMPTY_IMPACT: SegmentImpact = {
+  count: 0,
+  riskDelta: 0,
+  accessDelta: 0,
+  reliabilityDelta: 0,
+  blocking: false,
+  labels: [],
+};
+
+function asImpact(v: number | SegmentImpact | undefined): SegmentImpact {
+  if (!v) return EMPTY_IMPACT;
+  if (typeof v === "number")
+    return { count: v, riskDelta: v * 7, accessDelta: v * 6, reliabilityDelta: v * 6, blocking: false, labels: [] };
+  return v;
+}
+
 export interface RouteOption {
   id: string;
   label: "Safest Route" | "Fastest Route" | "Cheapest Route";
@@ -68,6 +99,8 @@ export interface RouteOption {
   reliabilityScore: number;
   disasterRisk: number;
   incidentCount: number;
+  incidentLabels: string[];
+  unsuitableSegments: string[];
   closures: string[];
   co2Kg: number;
   breakdown: ScoreBreakdown;
@@ -75,6 +108,7 @@ export interface RouteOption {
   reasons: string[];
   recommended: boolean;
 }
+
 
 const clamp = (n: number, lo = 0, hi = 100) => Math.max(lo, Math.min(hi, n));
 const round = (n: number, d = 0) => Number(n.toFixed(d));
