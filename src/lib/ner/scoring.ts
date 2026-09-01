@@ -293,14 +293,11 @@ function evaluate(segments: CorridorSegment[], req: RouteRequest, impacts: Impac
 }
 
 
-export function planRoutes(
-  req: RouteRequest,
-  incidentsBySegment: Record<string, number> = {},
-): RouteOption[] {
+export function planRoutes(req: RouteRequest, impacts: ImpactMap = {}): RouteOption[] {
   const raw = findPaths(req.originId, req.destinationId);
   if (!raw.length) return [];
 
-  const evaluated = raw.map((segments) => ({ segments, m: evaluate(segments, req, incidentsBySegment) }));
+  const evaluated = raw.map((segments) => ({ segments, m: evaluate(segments, req, impacts) }));
 
   const maxTime = Math.max(...evaluated.map((e) => e.m.travelHours));
   const minTime = Math.min(...evaluated.map((e) => e.m.travelHours));
@@ -330,24 +327,33 @@ export function planRoutes(
       breakdown.environment * weights.environment;
 
     if (e.m.closures.length) weightedTotal -= 30;
+    // Vehicle suitability: a heavy load on an under-rated hill segment is penalised hard.
+    weightedTotal -= Math.min(24, e.m.unsuitableSegments.length * 12);
     if ((req.hazardous || req.perishable) && e.m.disasterRisk > 60) weightedTotal -= 8;
+    if (e.m.incidentCount > 0) weightedTotal -= Math.min(12, e.m.incidentCount * 4);
     if (e.m.travelHours > req.maxDelayHours + 24) weightedTotal -= 6;
+    if (req.priority === "critical" && e.m.reliabilityScore < 50) weightedTotal -= 5;
 
-    return { ...e, breakdown, weightedTotal: clamp(round(weightedTotal, 1)) };
+    return { ...e, key: e.segments.map((s) => s.id).join("|"), breakdown, weightedTotal: clamp(round(weightedTotal, 1)) };
   });
 
-  const pick = (cmp: (a: typeof scored[number], b: typeof scored[number]) => number) =>
-    [...scored].sort(cmp)[0];
+  type Entry = (typeof scored)[number];
+  const bestBy = (pool: Entry[], cmp: (a: Entry, b: Entry) => number) => [...pool].sort(cmp)[0];
 
-  const safest = pick((a, b) => b.breakdown.safety - a.breakdown.safety || a.m.travelHours - b.m.travelHours);
-  const fastest = pick((a, b) => a.m.travelHours - b.m.travelHours);
-  const cheapest = pick((a, b) => a.m.costInr - b.m.costInr);
+  // Pick three *distinct* alignments so the alternatives are genuinely different.
+  const used = new Set<string>();
+  const take = (cmp: (a: Entry, b: Entry) => number): Entry | undefined => {
+    const pool = scored.filter((e) => !used.has(e.key));
+    const chosen = bestBy(pool.length ? pool : scored, cmp);
+    if (chosen) used.add(chosen.key);
+    return chosen;
+  };
 
-  const build = (
-    entry: typeof scored[number],
-    label: RouteOption["label"],
-    idx: number,
-  ): RouteOption => {
+  const safest = take((a, b) => b.breakdown.safety - a.breakdown.safety || a.m.travelHours - b.m.travelHours);
+  const fastest = take((a, b) => a.m.travelHours - b.m.travelHours);
+  const cheapest = take((a, b) => a.m.costInr - b.m.costInr);
+
+  const build = (entry: Entry, label: RouteOption["label"], idx: number): RouteOption => {
     const reasons: string[] = [];
     if (label === "Safest Route")
       reasons.push(`Highest weighted safety score (${entry.breakdown.safety}/100) across the corridor.`);
@@ -357,6 +363,10 @@ export function planRoutes(
       reasons.push(`Lowest estimated freight cost (₹${entry.m.costInr.toLocaleString("en-IN")}).`);
     if (entry.m.closures.length)
       reasons.push(`Blocked: ${entry.m.closures.join(", ")} — heavy penalty applied.`);
+    if (entry.m.unsuitableSegments.length)
+      reasons.push(
+        `Vehicle unsuitable for ${entry.m.unsuitableSegments.join(", ")} at ${req.weightTonnes}t gross load.`,
+      );
     if (entry.m.disasterRisk >= 60)
       reasons.push(`Elevated disaster risk (${entry.m.disasterRisk}/100) from landslide/rainfall exposure.`);
     if (entry.m.disasterRisk < 40)
@@ -364,7 +374,9 @@ export function planRoutes(
     if (entry.m.accessibilityScore < 55)
       reasons.push(`Accessibility is constrained (${entry.m.accessibilityScore}/100) — narrow hill sections.`);
     if (entry.m.incidentCount > 0)
-      reasons.push(`${entry.m.incidentCount} open incident(s) reported on this alignment.`);
+      reasons.push(
+        `${entry.m.incidentCount} open incident(s) on this alignment: ${entry.m.incidentLabels.join("; ")}.`,
+      );
     if (req.emergencyMode)
       reasons.push("Emergency Mode active: cost and emissions weighting removed in favour of safety and access.");
 
@@ -401,8 +413,47 @@ export function planRoutes(
 
   const best = [...options].sort((a, b) => b.weightedTotal - a.weightedTotal)[0]!;
   return options.map((o) => ({ ...o, recommended: o.id === best.id }));
-
 }
+
+const pct = (a: number, b: number) => (b === 0 ? 0 : Math.round(((a - b) / b) * 100));
+
+/**
+ * Dynamic, data-derived explanation of why `option` beats the strongest alternative.
+ * Never returns the same sentence for two different routes.
+ */
+export function explainRecommendation(option: RouteOption, all: RouteOption[]): string {
+  const rival = all
+    .filter((r) => r.id !== option.id)
+    .sort((a, b) => b.weightedTotal - a.weightedTotal)[0];
+  if (!rival) return `Only one viable alignment exists in the demo corridor network (score ${option.weightedTotal}/100).`;
+
+  const parts: string[] = [];
+  const dKm = option.distanceKm - rival.distanceKm;
+  const dHrs = round(option.travelHours - rival.travelHours, 1);
+  const dCost = option.costInr - rival.costInr;
+  const riskDelta = pct(option.disasterRisk, rival.disasterRisk);
+  const relDelta = pct(option.reliabilityScore, rival.reliabilityScore);
+  const accDelta = pct(option.accessibilityScore, rival.accessibilityScore);
+
+  if (riskDelta < 0) parts.push(`${Math.abs(riskDelta)}% lower predicted disaster exposure`);
+  if (relDelta > 0) parts.push(`${relDelta}% higher reliability`);
+  if (accDelta > 0) parts.push(`${accDelta}% better accessibility`);
+  if (option.incidentCount < rival.incidentCount)
+    parts.push(`${rival.incidentCount - option.incidentCount} fewer open incident(s)`);
+  if (!option.closures.length && rival.closures.length) parts.push("no active road closure");
+  if (dHrs < 0) parts.push(`${Math.abs(dHrs)} h faster`);
+  if (dCost < 0) parts.push(`₹${Math.abs(dCost).toLocaleString("en-IN")} cheaper`);
+
+  const tradeoffs: string[] = [];
+  if (dKm > 0) tradeoffs.push(`${dKm} km longer`);
+  if (dHrs > 0) tradeoffs.push(`${dHrs} h slower`);
+  if (dCost > 0) tradeoffs.push(`₹${dCost.toLocaleString("en-IN")} more expensive`);
+
+  const gain = parts.length ? parts.join(", ") : `a higher weighted score (${option.weightedTotal} vs ${rival.weightedTotal})`;
+  const cost = tradeoffs.length ? ` despite being ${tradeoffs.join(" and ")}` : "";
+  return `Recommended because ${option.label} has ${gain} than the ${rival.label}${cost}.`;
+}
+
 
 export const cityOptions = CITIES.map((c) => ({ value: c.id, label: `${c.name} (${c.state})` }));
 
