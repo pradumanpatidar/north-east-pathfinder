@@ -520,7 +520,31 @@ export const SEGMENTS: CorridorSegment[] = [
       [27.5861, 91.8594],
     ],
   },
+  {
+    id: "seg-nh27-ghy-itanagar",
+    name: "Guwahati – Itanagar (north bank, Rangiya–Balipara)",
+    highway: "NH-27/NH-15",
+    from: "guwahati",
+    to: "itanagar",
+    lengthKm: 348,
+    terrain: "rolling",
+    roadCondition: 64,
+    landslideRisk: 24,
+    floodRisk: 78,
+    rainfallMm24h: 88,
+    closed: false,
+    laneWidthM: 6.5,
+    maxVehicleTonnes: 30,
+    path: [
+      [26.1445, 91.7362],
+      [26.48, 91.62],
+      [26.82, 92.4],
+      [26.95, 93.1],
+      [27.0844, 93.6053],
+    ],
+  },
 ];
+
 
 export const segmentById = (id: string) => SEGMENTS.find((s) => s.id === id);
 
