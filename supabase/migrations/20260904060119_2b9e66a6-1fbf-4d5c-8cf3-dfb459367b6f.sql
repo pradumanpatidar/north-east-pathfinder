@@ -1,0 +1,1 @@
+revoke execute on function public.generate_incident_alert() from public, anon, authenticated;
