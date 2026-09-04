@@ -14,7 +14,250 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alerts: {
+        Row: {
+          acknowledged: boolean
+          body: string
+          created_at: string
+          id: string
+          incident_id: string | null
+          kind: string
+          segment_id: string | null
+          severity: string
+          shipment_code: string | null
+          source: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          acknowledged?: boolean
+          body?: string
+          created_at?: string
+          id?: string
+          incident_id?: string | null
+          kind: string
+          segment_id?: string | null
+          severity?: string
+          shipment_code?: string | null
+          source?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          acknowledged?: boolean
+          body?: string
+          created_at?: string
+          id?: string
+          incident_id?: string | null
+          kind?: string
+          segment_id?: string | null
+          severity?: string
+          shipment_code?: string | null
+          source?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incidents: {
+        Row: {
+          affected_road: string
+          clearance_hours: number
+          code: string
+          created_at: string
+          id: string
+          lat: number
+          lng: number
+          location: string
+          note: string
+          photo_url: string | null
+          reported_at: string
+          segment_id: string | null
+          severity: string
+          source: string
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          affected_road?: string
+          clearance_hours?: number
+          code?: string
+          created_at?: string
+          id?: string
+          lat: number
+          lng: number
+          location?: string
+          note?: string
+          photo_url?: string | null
+          reported_at?: string
+          segment_id?: string | null
+          severity?: string
+          source?: string
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          affected_road?: string
+          clearance_hours?: number
+          code?: string
+          created_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          location?: string
+          note?: string
+          photo_url?: string | null
+          reported_at?: string
+          segment_id?: string | null
+          severity?: string
+          source?: string
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incidents_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "road_segments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      road_segments: {
+        Row: {
+          closed: boolean
+          created_at: string
+          flood_risk: number
+          from_city: string
+          highway: string
+          id: string
+          landslide_risk: number
+          lane_width_m: number
+          length_km: number
+          max_vehicle_tonnes: number
+          name: string
+          path: Json
+          rainfall_mm_24h: number
+          road_condition: number
+          terrain: string
+          to_city: string
+          updated_at: string
+        }
+        Insert: {
+          closed?: boolean
+          created_at?: string
+          flood_risk: number
+          from_city: string
+          highway: string
+          id: string
+          landslide_risk: number
+          lane_width_m: number
+          length_km: number
+          max_vehicle_tonnes: number
+          name: string
+          path: Json
+          rainfall_mm_24h: number
+          road_condition: number
+          terrain: string
+          to_city: string
+          updated_at?: string
+        }
+        Update: {
+          closed?: boolean
+          created_at?: string
+          flood_risk?: number
+          from_city?: string
+          highway?: string
+          id?: string
+          landslide_risk?: number
+          lane_width_m?: number
+          length_km?: number
+          max_vehicle_tonnes?: number
+          name?: string
+          path?: Json
+          rainfall_mm_24h?: number
+          road_condition?: number
+          terrain?: string
+          to_city?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shipments: {
+        Row: {
+          cargo: string
+          cargo_type: string
+          code: string
+          created_at: string
+          delay_hours: number
+          destination_id: string
+          eta: string | null
+          id: string
+          operator: string
+          origin_id: string
+          priority: string
+          risk_score: number
+          route_name: string
+          segment_ids: string[]
+          status: string
+          updated_at: string
+          vehicle: string
+          weight_tonnes: number
+        }
+        Insert: {
+          cargo: string
+          cargo_type?: string
+          code: string
+          created_at?: string
+          delay_hours?: number
+          destination_id: string
+          eta?: string | null
+          id?: string
+          operator?: string
+          origin_id: string
+          priority?: string
+          risk_score?: number
+          route_name?: string
+          segment_ids?: string[]
+          status?: string
+          updated_at?: string
+          vehicle?: string
+          weight_tonnes?: number
+        }
+        Update: {
+          cargo?: string
+          cargo_type?: string
+          code?: string
+          created_at?: string
+          delay_hours?: number
+          destination_id?: string
+          eta?: string | null
+          id?: string
+          operator?: string
+          origin_id?: string
+          priority?: string
+          risk_score?: number
+          route_name?: string
+          segment_ids?: string[]
+          status?: string
+          updated_at?: string
+          vehicle?: string
+          weight_tonnes?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
