@@ -11,13 +11,13 @@ export interface WeatherSnapshot {
   provider: string;
   lat: number;
   lng: number;
-  temperatureC?: number;
-  rainfallMm24h?: number;
-  forecastMm24h?: number;
-  precipitationProbability?: number;
-  condition?: string;
-  observedAt?: string;
-  error?: string;
+  temperatureC?: number | undefined;
+  rainfallMm24h?: number | undefined;
+  forecastMm24h?: number | undefined;
+  precipitationProbability?: number | undefined;
+  condition?: string | undefined;
+  observedAt?: string | undefined;
+  error?: string | undefined;
 }
 
 const WMO: Record<number, string> = {
